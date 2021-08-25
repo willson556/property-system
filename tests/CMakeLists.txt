@@ -1,0 +1,5 @@
+add_executable(property_system_tests main.cpp ReferencePropertyTests.cpp ProxyPropertyTests.cpp)
+target_compile_features(property_system_tests PRIVATE cxx_std_17)
+target_link_libraries(property_system_tests PRIVATE property_system Catch2::Catch2)
+
+catch_discover_tests(property_system_tests)
