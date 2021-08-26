@@ -13,7 +13,7 @@ namespace PropertySystem
     public:
         T get() const override {
             T t;
-            IReadOnlyProperty::get(as_writable_bytes(t));
+            get(as_writable_bytes(t));
             return t;
         }
 
