@@ -9,27 +9,64 @@
 
 using namespace PropertySystem;
 
-class TestProxy : public ReadOnlyProxyProperty<int32_t> {
+class TestReadOnlyProxy : public ReadOnlyProxyProperty<int32_t> {
 public:
-    void get(gsl::span<std::byte> dst) const;
+	void get(gsl::span<std::byte> dst) const override {
+			check_size(dst);
+			for(size_t i{0}; i < size(); ++i) {
+				dst.data()[i] = storage[i];
+			}
+	}
     using ReadOnlyProxyProperty::get;
 
     std::array<std::byte, sizeof(int32_t)> storage{};
     int32_t& storage_int{*reinterpret_cast<int32_t*>(storage.data())};
 };
 
-void TestProxy::get(gsl::span<std::byte> dst) const {
-    check_size(dst);
-    for(size_t i{0}; i < this->size(); ++i) {
-        dst.data()[i] = storage[i];
-    }
-}
+class TestProxy : public ProxyProperty<int32_t> {
+public:
+	void get(gsl::span<std::byte> dst) const override {
+			check_size(dst);
+			for(size_t i{0}; i < size(); ++i) {
+				dst.data()[i] = storage[i];
+			}
+	}
+	using ReadOnlyProxyProperty::get;
+	
+	void set(gsl::span<const std::byte> src) override {
+		check_size(src);
+		for(size_t i{0}; i < size(); ++i) {
+			storage[i] = src.data()[i];
+		}
+	}
+	
+	using ProxyProperty::set;
+
+	std::array<std::byte, sizeof(int32_t)> storage{};
+	int32_t& storage_int{*reinterpret_cast<int32_t*>(storage.data())};
+};
 
 TEST_CASE("ReadOnlyProxyProperty") {
-    TestProxy test;
+    TestReadOnlyProxy test;
     test.storage_int = 2;
 
     int32_t var{test.get()};
 
     REQUIRE(var == 2);
+}
+
+TEST_CASE("ProxyProperty") {
+	TestProxy test;
+	
+	SECTION("get") {
+		test.storage_int = 2;
+		int32_t var{test.get()};
+		
+		REQUIRE(var == 2);
+	}
+	
+	SECTION("set") {
+		test.set(5);
+		REQUIRE(test.storage_int == 5);
+	}
 }
