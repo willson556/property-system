@@ -2,8 +2,8 @@
 // Created by Thomas Willson on 2021-08-25.
 //
 
-#include <array>
 #include "catch2/catch.hpp"
+#include <array>
 
 #include "PropertyProxy.h"
 

@@ -1,0 +1,1 @@
+Checks: '-*,boost-*,bugprone-*,cert-*,clang-analyzer-*,cppcoreguidelines-*,-cppcoreguidelines-pro-type-reinterpret-cast,hicpp-*,llvm-include-order,misc-*,modernize-*,-modernize-use-trailing-return-type,mpi-*,performance-*,portability-*,readability-*,'

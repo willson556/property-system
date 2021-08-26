@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <stdexcept>
 
 #include "gsl/span"
@@ -24,7 +24,9 @@ namespace PropertySystem {
 
     class IReadOnlyProperty {
     public:
+        [[nodiscard]]
         virtual size_t size() const = 0;
+
         virtual void get(gsl::span<std::byte> dst) const = 0;
 
     protected:
@@ -43,9 +45,11 @@ namespace PropertySystem {
     template<typename T>
     class ITypedReadOnlyProperty : virtual public IReadOnlyProperty {
     public:
+        [[nodiscard]]
         size_t size() const override { return sizeof(T); }
 
         virtual T get() const = 0;
+
         using IReadOnlyProperty::get;
     };
 
@@ -53,6 +57,7 @@ namespace PropertySystem {
     class ITypedProperty : virtual public ITypedReadOnlyProperty<T>, virtual public IProperty {
     public:
         virtual void set(const T &val) = 0;
+
         using IProperty::set;
     };
 
@@ -60,7 +65,7 @@ namespace PropertySystem {
         template<typename T, typename TStorage>
         class ReferenceProperty : virtual public ITypedReadOnlyProperty<T> {
         public:
-            ReferenceProperty(TStorage &reference)
+            explicit ReferenceProperty(TStorage &reference)
                     : reference{reference} {}
 
             T get() const override { return reference; }
@@ -71,7 +76,7 @@ namespace PropertySystem {
             }
 
         protected:
-            TStorage &reference;
+            TStorage &reference; // NOLINT: memory optimization in a simple class.
         };
     }
 
@@ -79,14 +84,14 @@ namespace PropertySystem {
     class ReferenceReadOnlyProperty
             : public Impl::ReferenceProperty<T, const T>, virtual public ITypedReadOnlyProperty<T> {
     public:
-        ReferenceReadOnlyProperty(const T &reference)
+        explicit ReferenceReadOnlyProperty(const T &reference)
                 : Impl::ReferenceProperty<T, const T>(reference) {}
     };
 
     template<typename T>
     class ReferenceProperty : public Impl::ReferenceProperty<T, T>, virtual public ITypedProperty<T> {
     public:
-        ReferenceProperty(T &reference)
+        explicit ReferenceProperty(T &reference)
                 : Impl::ReferenceProperty<T, T>{reference} {}
 
         void set(const T &val) override { this->reference = val; }

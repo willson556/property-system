@@ -16,7 +16,7 @@ TEST_CASE("ReferenceReadOnlyProperty") {
     REQUIRE(uut.get() == 0);
     REQUIRE(uut.size() == sizeof(int));
 
-    var = 1;
+    1;
     REQUIRE(uut.get() == 1);
 
     int buffer{0};
