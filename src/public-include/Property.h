@@ -102,4 +102,46 @@ namespace PropertySystem {
         }
     };
 
+    template<typename TGetter,
+             typename TProp = decltype(std::declval<TGetter>()())>
+    class LambdaReadOnlyProperty : virtual public ITypedReadOnlyProperty<TProp> {
+    public:
+        explicit LambdaReadOnlyProperty(TGetter getter)
+            : getter{getter} {}
+
+        TProp get() const override {
+            return getter();
+        }
+
+        void get(gsl::span<std::byte> dst) const override {
+            this->check_size(dst);
+            auto value{get()};
+            *reinterpret_cast<TProp*>(dst.data()) = value;
+        }
+    private:
+        TGetter getter;
+    };
+
+
+    template<typename TGetter,
+             typename TSetter,
+             typename TProp = decltype(std::declval<TGetter>()())>
+    class LambdaProperty : public LambdaReadOnlyProperty<TGetter, TProp>, virtual public ITypedProperty<TProp>
+    {
+    public:
+        LambdaProperty(TGetter getter, TSetter setter)
+            : LambdaReadOnlyProperty<TGetter, TProp>(getter), setter{setter}
+            {}
+
+        void set(const TProp& val) override {
+            setter(val);
+        }
+
+        void set(gsl::span<const std::byte> src) override {
+            this->check_size(src);
+            set(*reinterpret_cast<const TProp*>(src.data()));
+        }
+    private:
+        TSetter setter;
+    };
 }

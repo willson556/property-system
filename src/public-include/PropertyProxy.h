@@ -6,6 +6,11 @@
 
 #include "Property.h"
 
+/**
+ * The ProxyProperty classes serve as base classes for a property implementations that function
+ * over a communications bus.
+ */
+
 namespace PropertySystem
 {
     template<typename T>
