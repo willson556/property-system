@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-#include "gsl/span"
+#include "gsl/gsl"
 
 namespace PropertySystem {
 
@@ -28,6 +28,10 @@ namespace PropertySystem {
         virtual size_t size() const = 0;
 
         virtual void get(gsl::span<std::byte> dst) const = 0;
+
+#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
+        virtual gsl::czstring<> name() const = 0;
+#endif
 
     protected:
         void check_size(const gsl::span<const std::byte> &span) const {
@@ -65,8 +69,12 @@ namespace PropertySystem {
         template<typename T, typename TStorage>
         class ReferenceProperty : virtual public ITypedReadOnlyProperty<T> {
         public:
-            explicit ReferenceProperty(TStorage &reference)
-                    : reference{reference} {}
+            ReferenceProperty([[maybe_unused]] gsl::czstring<> name, TStorage &reference)
+                    : reference{reference}
+#ifdef  PROPERTY_SYSTEM_INCLUDE_NAMES
+            ,n{name}
+#endif
+            {}
 
             T get() const override { return reference; }
 
@@ -75,8 +83,18 @@ namespace PropertySystem {
                 *reinterpret_cast<T *>(dst.data()) = reference;
             }
 
+#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
+            gsl::czstring<> name() override {
+                return n;
+            }
+#endif
+
         protected:
             TStorage &reference; // NOLINT: memory optimization in a simple class.
+#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
+            private:
+                gsl::czstring<> n;
+#endif
         };
     }
 
@@ -84,15 +102,15 @@ namespace PropertySystem {
     class ReferenceReadOnlyProperty
             : public Impl::ReferenceProperty<T, const T>, virtual public ITypedReadOnlyProperty<T> {
     public:
-        explicit ReferenceReadOnlyProperty(const T &reference)
-                : Impl::ReferenceProperty<T, const T>(reference) {}
+        ReferenceReadOnlyProperty(gsl::czstring<> name, const T &reference)
+                : Impl::ReferenceProperty<T, const T>{name, reference} {}
     };
 
     template<typename T>
     class ReferenceProperty : public Impl::ReferenceProperty<T, T>, virtual public ITypedProperty<T> {
     public:
-        explicit ReferenceProperty(T &reference)
-                : Impl::ReferenceProperty<T, T>{reference} {}
+        ReferenceProperty(gsl::czstring<> name, T &reference)
+                : Impl::ReferenceProperty<T, T>{name, reference} {}
 
         void set(const T &val) override { this->reference = val; }
 
@@ -103,11 +121,15 @@ namespace PropertySystem {
     };
 
     template<typename TGetter,
-             typename TProp = decltype(std::declval<TGetter>()())>
+            typename TProp = decltype(std::declval<TGetter>()())>
     class LambdaReadOnlyProperty : virtual public ITypedReadOnlyProperty<TProp> {
     public:
-        explicit LambdaReadOnlyProperty(TGetter getter)
-            : getter{getter} {}
+        LambdaReadOnlyProperty([[maybe_unused]] gsl::czstring<> name, TGetter getter)
+                : getter{getter}
+#ifdef  PROPERTY_SYSTEM_INCLUDE_NAMES
+        ,n{name}
+#endif
+        {}
 
         TProp get() const override {
             return getter();
@@ -116,32 +138,87 @@ namespace PropertySystem {
         void get(gsl::span<std::byte> dst) const override {
             this->check_size(dst);
             auto value{get()};
-            *reinterpret_cast<TProp*>(dst.data()) = value;
+            *reinterpret_cast<TProp *>(dst.data()) = value;
         }
+
+#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
+        gsl::czstring<> name() override {
+                return n;
+            }
+#endif
     private:
         TGetter getter;
+
+#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
+        gsl::czstring<> n;
+#endif
     };
 
 
     template<typename TGetter,
-             typename TSetter,
-             typename TProp = decltype(std::declval<TGetter>()())>
-    class LambdaProperty : public LambdaReadOnlyProperty<TGetter, TProp>, virtual public ITypedProperty<TProp>
-    {
+            typename TSetter,
+            typename TProp = decltype(std::declval<TGetter>()())>
+    class LambdaProperty : public LambdaReadOnlyProperty<TGetter, TProp>, virtual public ITypedProperty<TProp> {
     public:
-        LambdaProperty(TGetter getter, TSetter setter)
-            : LambdaReadOnlyProperty<TGetter, TProp>(getter), setter{setter}
-            {}
+        LambdaProperty(gsl::czstring<> name, TGetter getter, TSetter setter)
+                : LambdaReadOnlyProperty<TGetter, TProp>{name, getter}, setter{setter} {}
 
-        void set(const TProp& val) override {
+        void set(const TProp &val) override {
             setter(val);
         }
 
         void set(gsl::span<const std::byte> src) override {
             this->check_size(src);
-            set(*reinterpret_cast<const TProp*>(src.data()));
+            set(*reinterpret_cast<const TProp *>(src.data()));
         }
+
     private:
         TSetter setter;
+    };
+
+    template<typename T>
+    class StorageProperty : public ITypedProperty<T> {
+    public:
+        StorageProperty([[maybe_unused]] gsl::czstring<> name)
+#ifdef  PROPERTY_SYSTEM_INCLUDE_NAMES
+        :n{name}
+#endif
+        {}
+
+        explicit StorageProperty([[maybe_unused]] gsl::czstring<> name, const T &initial_value)
+                : value{initial_value}
+#ifdef  PROPERTY_SYSTEM_INCLUDE_NAMES
+        ,n{name}
+#endif
+        {}
+
+        T get() const override {
+            return value;
+        }
+
+        void get(gsl::span<std::byte> dst) const override {
+            this->check_size(gsl::as_bytes(dst));
+            *reinterpret_cast<T *>(dst.data()) = value;
+        }
+
+        void set(const T &val) override {
+            value = val;
+        }
+
+        void set(gsl::span<const std::byte> src) override {
+            this->check_size(src);
+            value = *reinterpret_cast<const T *>(src.data());
+        }
+
+#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
+        gsl::czstring<> name() override {
+                return n;
+            }
+#endif
+    private:
+        T value;
+#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
+        gsl::czstring<> n;
+#endif
     };
 }

@@ -11,7 +11,7 @@ using namespace PropertySystem;
 TEST_CASE("ReferenceReadOnlyProperty") {
     int var{0};
 
-    const ReferenceReadOnlyProperty<int> uut{var};
+    const ReferenceReadOnlyProperty<int> uut{"var", var};
 
     REQUIRE(uut.get() == 0);
     REQUIRE(uut.size() == sizeof(int));
@@ -26,7 +26,7 @@ TEST_CASE("ReferenceReadOnlyProperty") {
 
 TEST_CASE("ReferenceProperty") {
     double var{0};
-    ReferenceProperty<double> uut{var};
+    ReferenceProperty<double> uut{"var", var};
 
     SECTION("get") {
         REQUIRE(uut.get() == 0);

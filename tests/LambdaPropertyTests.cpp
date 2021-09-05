@@ -11,7 +11,7 @@ using namespace PropertySystem;
 TEST_CASE("LambdaReadOnlyProperty") {
     int var{5};
 
-    const LambdaReadOnlyProperty uut{[&var]() { return var; }};
+    const LambdaReadOnlyProperty uut{"uut", [&var]() { return var; }};
 
     REQUIRE(uut.get() == 5);
     REQUIRE(uut.size() == sizeof(var));
@@ -27,7 +27,7 @@ TEST_CASE("LambdaReadOnlyProperty") {
 
 TEST_CASE("LambdaProperty") {
     double var{5};
-    LambdaProperty uut{[&var]() { return var; }, [&var](double v) { var = v; }};
+    LambdaProperty uut{"uut", [&var]() { return var; }, [&var](double v) { var = v; }};
 
     SECTION("get") {
         REQUIRE(uut.get() == 5);

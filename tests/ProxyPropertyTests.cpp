@@ -11,6 +11,9 @@ using namespace PropertySystem;
 
 class TestReadOnlyProxy : public ReadOnlyProxyProperty<int32_t> {
 public:
+    TestReadOnlyProxy()
+        : ReadOnlyProxyProperty<int32_t>{"test"} {}
+
 	void get(gsl::span<std::byte> dst) const override {
 			check_size(dst);
 			for(size_t i{0}; i < size(); ++i) {
@@ -25,6 +28,9 @@ public:
 
 class TestProxy : public ProxyProperty<int32_t> {
 public:
+    TestProxy()
+        : ProxyProperty<int32_t>{"test"} {}
+
 	void get(gsl::span<std::byte> dst) const override {
 			check_size(dst);
 			for(size_t i{0}; i < size(); ++i) {

@@ -23,6 +23,23 @@ namespace PropertySystem
         }
 
         using IReadOnlyProperty::get;
+
+#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
+        gsl::czstring<> name() override {
+                return n;
+            }
+#endif
+    protected:
+        explicit ReadOnlyProxyProperty([[maybe_unused]] gsl::czstring<> name)
+#ifdef  PROPERTY_SYSTEM_INCLUDE_NAMES
+        :n{name}
+#endif
+        {
+        }
+    private:
+#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
+        gsl::czstring<> n;
+#endif
     };
 
     template<typename T>
@@ -33,5 +50,8 @@ namespace PropertySystem
         }
 
         using IProperty::set;
+    protected:
+        explicit ProxyProperty(gsl::czstring<> name)
+            : ReadOnlyProxyProperty<T>{name} {}
     };
 }
