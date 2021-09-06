@@ -211,7 +211,7 @@ namespace PropertySystem {
         }
 
 #ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
-        gsl::czstring<> name() override {
+        gsl::czstring<> name() const override {
                 return n;
             }
 #endif
