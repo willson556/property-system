@@ -77,12 +77,15 @@ namespace PropertySystem {
         void flatten(std::string prefix,
                      std::vector<FlattenedPropertyWrapper> &output,
                      PropertySet *set) {
+            auto adjusted_prefix{prefix.empty() ? "" : prefix + "."};
+
             for (auto& nested_set: set->sets()) {
-                flatten(nested_set.name(), output, &nested_set.nested());
+                auto name{adjusted_prefix + nested_set.name()};
+                flatten(name, output, &nested_set.nested());
             }
 
             for (auto property: set->properties()) {
-                auto name{ prefix.empty() ? property->name() : prefix + "." + property->name() };
+                auto name{  adjusted_prefix + property->name() };
                 output.emplace_back(name, *property);
             }
         }
