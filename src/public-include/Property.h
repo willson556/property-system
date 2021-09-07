@@ -55,12 +55,18 @@ namespace PropertySystem {
         virtual T get() const = 0;
 
         using IReadOnlyProperty::get;
+
+        operator T() const { return get(); }
     };
 
     template<typename T>
     class ITypedProperty : virtual public ITypedReadOnlyProperty<T>, virtual public IProperty {
     public:
         virtual void set(const T &val) = 0;
+
+        void operator=(const T &val) {
+            set(val);
+        }
 
         using IProperty::set;
     };
@@ -118,6 +124,8 @@ namespace PropertySystem {
             this->check_size(src);
             this->reference = *reinterpret_cast<const T *>(src.data());
         }
+
+        using ITypedProperty<T>::operator=;
     };
 
     template<typename TGetter,
@@ -172,6 +180,8 @@ namespace PropertySystem {
             set(*reinterpret_cast<const TProp *>(src.data()));
         }
 
+        using ITypedProperty<TProp>::operator=;
+
     private:
         TSetter setter;
     };
@@ -209,6 +219,8 @@ namespace PropertySystem {
             this->check_size(src);
             value = *reinterpret_cast<const T *>(src.data());
         }
+
+        using ITypedProperty<T>::operator=;
 
 #ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
         gsl::czstring<> name() const override {

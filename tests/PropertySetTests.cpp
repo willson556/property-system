@@ -21,13 +21,11 @@ struct MyNestedClassProperties : public IPropertyStruct {
 
 struct MyClassProperties : public IPropertyStruct {
     PropertySet get_property_set() override {
-        return PropertySet{{
-                                   NestedPropertySet("Nested1",
-                                                     nested1.get_property_set()),
+        return PropertySet{{NestedPropertySet("Nested1",
+                                              nested1.get_property_set()),
                                    NestedPropertySet("Nested2",
                                                      nested2.get_property_set())},
-                           {
-                                   &max}
+                           {&max}
         };
     }
 
@@ -40,7 +38,6 @@ struct MyClassProperties : public IPropertyStruct {
 class MyNestedClass {
     MyNestedClass(MyNestedClassProperties &properties)
             : properties{properties} {}
-
 private:
     MyNestedClassProperties &properties;
 };

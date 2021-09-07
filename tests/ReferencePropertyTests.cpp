@@ -41,6 +41,8 @@ TEST_CASE("ReferenceProperty") {
 
         float buffer2{0};
         REQUIRE_THROWS(uut.get(as_writable_bytes(buffer2)));
+
+        buffer = uut;
     }
 
     SECTION("set") {
@@ -50,5 +52,8 @@ TEST_CASE("ReferenceProperty") {
         double buffer{3};
         uut.set(as_bytes(buffer));
         REQUIRE(var == 3);
+
+        uut = 5.0;
+        REQUIRE(var == 5);
     }
 }
