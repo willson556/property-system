@@ -11,8 +11,7 @@
  * over a communications bus.
  */
 
-namespace PropertySystem
-{
+namespace PropertySystem {
     template<typename T>
     class ReadOnlyProxyProperty : virtual public ITypedReadOnlyProperty<T> {
     public:
@@ -36,6 +35,7 @@ namespace PropertySystem
 #endif
         {
         }
+
     private:
 #ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
         gsl::czstring<> n;
@@ -50,8 +50,9 @@ namespace PropertySystem
         }
 
         using IProperty::set;
+        using ITypedProperty<T>::operator=;
     protected:
         explicit ProxyProperty(gsl::czstring<> name)
-            : ReadOnlyProxyProperty<T>{name} {}
+                : ReadOnlyProxyProperty<T>{name} {}
     };
 }
