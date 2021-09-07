@@ -50,6 +50,13 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   else()
     message(STATUS "Doxygen not found, not building docs")
   endif()
+
+  FetchContent_Declare(
+    ClangFormat
+    GIT_REPOSITORY https://github.com/TheLartians/Format.cmake.git
+    GIT_TAG v1.7.2)
+  set(FORMAT_SKIP_CMAKE true)
+  FetchContent_MakeAvailable(ClangFormat)
 endif()
 
 

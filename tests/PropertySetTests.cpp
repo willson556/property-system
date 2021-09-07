@@ -21,8 +21,8 @@ struct Level1ClassProperties : public IPropertyStruct {
 
 struct Level2ClassProperties : public IPropertyStruct {
     PropertySet get_property_set() override {
-        return PropertySystem::PropertySet{{NestedPropertySet{"Level1", level1.get_property_set()}},
-                                           {&p, &i}};
+        return PropertySystem::PropertySet{
+            {NestedPropertySet{"Level1", level1.get_property_set()}}, {&p, &i}};
     }
 
     StorageProperty<int> p{"p"};
@@ -33,12 +33,10 @@ struct Level2ClassProperties : public IPropertyStruct {
 
 struct Level3ClassProperties : public IPropertyStruct {
     PropertySet get_property_set() override {
-        return PropertySet{{NestedPropertySet("Nested1",
-                                              nested1.get_property_set()),
-                                   NestedPropertySet("Nested2",
-                                                     nested2.get_property_set())},
-                           {&max}
-        };
+        return PropertySet{
+            {NestedPropertySet("Nested1", nested1.get_property_set()),
+             NestedPropertySet("Nested2", nested2.get_property_set())},
+            {&max}};
     }
 
     PropertySystem::StorageProperty<int> max{"max"};
@@ -47,7 +45,9 @@ struct Level3ClassProperties : public IPropertyStruct {
     Level2ClassProperties nested2;
 };
 
-static void check_property(const FlattenedPropertyWrapper& wrapper, const IReadOnlyProperty& expected_target, std::string expected_name) {
+static void check_property(const FlattenedPropertyWrapper& wrapper,
+                           const IReadOnlyProperty& expected_target,
+                           std::string expected_name) {
     REQUIRE(wrapper.name() == expected_name);
     REQUIRE(&wrapper.property() == &expected_target);
 }

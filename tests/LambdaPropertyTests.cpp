@@ -27,7 +27,8 @@ TEST_CASE("LambdaReadOnlyProperty") {
 
 TEST_CASE("LambdaProperty") {
     double var{5};
-    LambdaProperty uut{"uut", [&var]() { return var; }, [&var](double v) { var = v; }};
+    LambdaProperty uut{"uut", [&var]() { return var; },
+                       [&var](double v) { var = v; }};
 
     SECTION("get") {
         REQUIRE(uut.get() == 5);

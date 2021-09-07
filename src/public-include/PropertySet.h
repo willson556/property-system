@@ -11,96 +11,95 @@
 
 namespace PropertySystem {
 
-    class NestedPropertySet;
+class NestedPropertySet;
 
-    class PropertySet {
-    public:
-        PropertySet(std::initializer_list<NestedPropertySet> sets,
-                    std::initializer_list<IReadOnlyProperty *> properties)
-                : s{sets}, p{properties}
-        {}
+class PropertySet {
+   public:
+    PropertySet(std::initializer_list<NestedPropertySet> sets,
+                std::initializer_list<IReadOnlyProperty*> properties)
+        : s{sets}, p{properties} {}
 
-        PropertySet(std::initializer_list<IReadOnlyProperty *> properties)
-                : p{properties}
-        {}
+    PropertySet(std::initializer_list<IReadOnlyProperty*> properties)
+        : p{properties} {}
 
-        std::vector<NestedPropertySet> &sets() { return s; }
+    std::vector<NestedPropertySet>& sets() { return s; }
 
-        const std::vector<IReadOnlyProperty *> &properties() { return p; }
+    const std::vector<IReadOnlyProperty*>& properties() { return p; }
 
-    private:
-        std::vector<NestedPropertySet> s;
-        const std::vector<IReadOnlyProperty *> p;
-    };
+   private:
+    std::vector<NestedPropertySet> s;
+    const std::vector<IReadOnlyProperty*> p;
+};
 
-    class NestedPropertySet {
-    public:
-        NestedPropertySet([[maybe_unused]] gsl::czstring<> name, PropertySet nested_set)
-                : nested_set{nested_set}
+class NestedPropertySet {
+   public:
+    NestedPropertySet([[maybe_unused]] gsl::czstring<> name,
+                      PropertySet nested_set)
+        : nested_set {
+        nested_set
+    }
 #ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
-        ,n{name}
+    , n { name }
 #endif
-        {}
+    {}
 
-        PropertySet& nested() { return nested_set; }
+    PropertySet& nested() { return nested_set; }
 
 #ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
-        gsl::czstring<> name() const {
-            return n;
-        }
+    gsl::czstring<> name() const { return n; }
 #endif
 
-    private:
-        PropertySet nested_set;
+   private:
+    PropertySet nested_set;
 #ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
-        gsl::czstring<> n;
+    gsl::czstring<> n;
 #endif
-    };
+};
 
 #ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
 
-    class FlattenedPropertyWrapper {
-    public:
-        FlattenedPropertyWrapper(std::string name, IReadOnlyProperty &prop)
-                : prop{prop}, n{name} {}
+class FlattenedPropertyWrapper {
+   public:
+    FlattenedPropertyWrapper(std::string name, IReadOnlyProperty& prop)
+        : prop{prop}, n{name} {}
 
-        IReadOnlyProperty &property() const { return prop; }
+    IReadOnlyProperty& property() const { return prop; }
 
-        const std::string& name() const { return n; }
+    const std::string& name() const { return n; }
 
-    private:
-        IReadOnlyProperty &prop;
-        std::string n;
-    };
+   private:
+    IReadOnlyProperty& prop;
+    std::string n;
+};
 
-    namespace Impl {
-        void flatten(std::string prefix,
-                     std::vector<FlattenedPropertyWrapper> &output,
-                     PropertySet *set) {
-            auto adjusted_prefix{prefix.empty() ? "" : prefix + "."};
+namespace Impl {
+void flatten(std::string prefix,
+             std::vector<FlattenedPropertyWrapper>& output,
+             PropertySet* set) {
+    auto adjusted_prefix{prefix.empty() ? "" : prefix + "."};
 
-            for (auto& nested_set: set->sets()) {
-                auto name{adjusted_prefix + nested_set.name()};
-                flatten(name, output, &nested_set.nested());
-            }
-
-            for (auto property: set->properties()) {
-                auto name{  adjusted_prefix + property->name() };
-                output.emplace_back(name, *property);
-            }
-        }
+    for (auto& nested_set : set->sets()) {
+        auto name{adjusted_prefix + nested_set.name()};
+        flatten(name, output, &nested_set.nested());
     }
 
-    std::vector<FlattenedPropertyWrapper> flatten(PropertySet property_set) {
-        std::vector<FlattenedPropertyWrapper> flat_list;
-
-        Impl::flatten("", flat_list, &property_set);
-
-        return flat_list;
+    for (auto property : set->properties()) {
+        auto name{adjusted_prefix + property->name()};
+        output.emplace_back(name, *property);
     }
-#endif
-
-    struct IPropertyStruct {
-        virtual PropertySet get_property_set() = 0;
-    };
 }
+}  // namespace Impl
+
+std::vector<FlattenedPropertyWrapper> flatten(PropertySet property_set) {
+    std::vector<FlattenedPropertyWrapper> flat_list;
+
+    Impl::flatten("", flat_list, &property_set);
+
+    return flat_list;
+}
+#endif
+
+struct IPropertyStruct {
+    virtual PropertySet get_property_set() = 0;
+};
+}  // namespace PropertySystem
