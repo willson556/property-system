@@ -35,28 +35,16 @@ class NestedPropertySet {
    public:
     NestedPropertySet([[maybe_unused]] gsl::czstring<> name,
                       PropertySet nested_set)
-        : nested_set {
-        nested_set
-    }
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
-    , n { name }
-#endif
-    {}
+        : nested_set{nested_set}, n{name} {}
 
     PropertySet& nested() { return nested_set; }
 
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
     gsl::czstring<> name() const { return n; }
-#endif
 
    private:
     PropertySet nested_set;
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
     gsl::czstring<> n;
-#endif
 };
-
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
 
 class FlattenedPropertyWrapper {
    public:
@@ -97,7 +85,6 @@ std::vector<FlattenedPropertyWrapper> flatten(PropertySet property_set) {
 
     return flat_list;
 }
-#endif
 
 struct IPropertyStruct {
     virtual PropertySet get_property_set() = 0;

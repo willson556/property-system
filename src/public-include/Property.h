@@ -29,13 +29,11 @@ class IReadOnlyProperty {
 
     virtual void get(gsl::span<std::byte> dst) const = 0;
 
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
     virtual gsl::czstring<> name() const = 0;
-#endif
 
    protected:
     void check_size(const gsl::span<const std::byte>& span) const {
-        if (span.size() < size()) {
+        if (span.size() < this->size()) {
             throw std::runtime_error("Provided span is too small!");
         }
     }
@@ -64,7 +62,11 @@ class ITypedProperty : virtual public ITypedReadOnlyProperty<T>,
    public:
     virtual void set(const T& val) = 0;
 
-    void operator=(const T& val) { set(val); }
+    T operator=(const T& val) {
+        set(val);
+        return this->get();
+    }  // NOLINT(cppcoreguidelines-c-copy-assignment-signature) Can't always
+       // return a reference
 
     using IProperty::set;
 };
@@ -75,13 +77,7 @@ class ReferenceProperty : virtual public ITypedReadOnlyProperty<T> {
    public:
     ReferenceProperty([[maybe_unused]] gsl::czstring<> name,
                       TStorage& reference)
-        : reference {
-        reference
-    }
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
-    , n { name }
-#endif
-    {}
+        : reference{reference}, n{name} {}
 
     T get() const override { return reference; }
 
@@ -90,16 +86,12 @@ class ReferenceProperty : virtual public ITypedReadOnlyProperty<T> {
         *reinterpret_cast<T*>(dst.data()) = reference;
     }
 
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
-    gsl::czstring<> name() override { return n; }
-#endif
+    gsl::czstring<> name() const override { return n; }
 
    protected:
     TStorage& reference;  // NOLINT: memory optimization in a simple class.
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
    private:
     gsl::czstring<> n;
-#endif
 };
 }  // namespace Impl
 
@@ -134,13 +126,7 @@ class LambdaReadOnlyProperty : virtual public ITypedReadOnlyProperty<TProp> {
    public:
     LambdaReadOnlyProperty([[maybe_unused]] gsl::czstring<> name,
                            TGetter getter)
-        : getter {
-        getter
-    }
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
-    , n { name }
-#endif
-    {}
+        : getter{getter}, n{name} {}
 
     TProp get() const override { return getter(); }
 
@@ -150,15 +136,12 @@ class LambdaReadOnlyProperty : virtual public ITypedReadOnlyProperty<TProp> {
         *reinterpret_cast<TProp*>(dst.data()) = value;
     }
 
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
-    gsl::czstring<> name() override { return n; }
-#endif
+    gsl::czstring<> name() const override { return n; }
+
    private:
     TGetter getter;
 
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
     gsl::czstring<> n;
-#endif
 };
 
 template <typename TGetter,
@@ -185,25 +168,13 @@ class LambdaProperty : public LambdaReadOnlyProperty<TGetter, TProp>,
 };
 
 template <typename T>
-class StorageProperty : public ITypedProperty<T> {
+class StorageProperty : virtual public ITypedProperty<T> {
    public:
-    StorageProperty([[maybe_unused]] gsl::czstring<> name)
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
-        : n {
-        name
-    }
-#endif
-    {}
+    explicit StorageProperty([[maybe_unused]] gsl::czstring<> name) : n{name} {}
 
-    explicit StorageProperty([[maybe_unused]] gsl::czstring<> name,
-                             const T& initial_value)
-        : value {
-        initial_value
-    }
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
-    , n { name }
-#endif
-    {}
+    StorageProperty([[maybe_unused]] gsl::czstring<> name,
+                    const T& initial_value)
+        : value{initial_value}, n{name} {}
 
     T get() const override { return value; }
 
@@ -221,13 +192,10 @@ class StorageProperty : public ITypedProperty<T> {
 
     using ITypedProperty<T>::operator=;
 
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
     gsl::czstring<> name() const override { return n; }
-#endif
+
    private:
     T value;
-#ifdef PROPERTY_SYSTEM_INCLUDE_NAMES
     gsl::czstring<> n;
-#endif
 };
 }  // namespace PropertySystem

@@ -4,8 +4,6 @@
 
 #include "catch2/catch.hpp"
 
-#define PROPERTY_SYSTEM_INCLUDE_NAMES
-
 #include "PropertySet.h"
 
 using namespace PropertySystem;

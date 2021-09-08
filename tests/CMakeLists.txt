@@ -1,4 +1,4 @@
-add_executable(property_system_tests main.cpp ReferencePropertyTests.cpp ProxyPropertyTests.cpp LambdaPropertyTests.cpp PropertySetTests.cpp StoragePropertyTests.cpp)
+add_executable(property_system_tests main.cpp ReferencePropertyTests.cpp ProxyPropertyTests.cpp LambdaPropertyTests.cpp StoragePropertyTests.cpp PropertySetTests.cpp)
 target_compile_features(property_system_tests PRIVATE cxx_std_17)
 target_link_libraries(property_system_tests PRIVATE property_system Catch2::Catch2)
 
