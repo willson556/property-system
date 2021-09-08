@@ -36,7 +36,7 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}}
 
     - name: Gather coverage
-      uses: daalbano/lcov-action@v1
+      uses: danielealbano/lcov-action@v1
       with:
         remove_patterns: '/usr/*'
 
