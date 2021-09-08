@@ -39,6 +39,7 @@ jobs:
       uses: danielealbano/lcov-action@v1
       with:
         remove_patterns: '/usr/*'
+        output_lcov_info: ${{github.workspace}}/build/coverage.info
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
