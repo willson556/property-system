@@ -64,7 +64,7 @@ class ITypedProperty : virtual public ITypedReadOnlyProperty<T>,
 
     T operator=(const T& val) {
         set(val);
-        return this->get();
+        return static_cast<ITypedReadOnlyProperty<T>*>(this)->get();
     }  // NOLINT(cppcoreguidelines-c-copy-assignment-signature) Can't always
        // return a reference
 
