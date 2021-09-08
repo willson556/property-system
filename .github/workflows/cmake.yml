@@ -35,11 +35,10 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
 
-    - name: Install lcov
-      run: apt-get update && apt-get install -y lcov
-
     - name: Gather coverage
-      run: sh gather_coverage.sh
+      uses: daalbano/lcov-action@v1
+      with:
+        remove_patterns: '/usr/*'
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
