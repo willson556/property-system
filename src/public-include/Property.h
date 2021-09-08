@@ -35,7 +35,7 @@ class IReadOnlyProperty {
 
    protected:
     void check_size(const gsl::span<const std::byte>& span) const {
-        if (span.size() < this->size()) {
+        if (span.size() < size()) {
             throw std::runtime_error("Provided span is too small!");
         }
     }
