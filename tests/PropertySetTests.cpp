@@ -10,7 +10,7 @@ using namespace PropertySystem;
 
 struct Level1ClassProperties : public IPropertyStruct {
     PropertySet get_property_set() override {
-        return PropertySystem::PropertySet{{&j, &k}};
+        return PropertySet{{&j, &k}};
     }
 
     StorageProperty<int> j{"j"};
@@ -19,7 +19,7 @@ struct Level1ClassProperties : public IPropertyStruct {
 
 struct Level2ClassProperties : public IPropertyStruct {
     PropertySet get_property_set() override {
-        return PropertySystem::PropertySet{
+        return PropertySet{
             {NestedPropertySet{"Level1", level1.get_property_set()}}, {&p, &i}};
     }
 
@@ -37,7 +37,7 @@ struct Level3ClassProperties : public IPropertyStruct {
             {&max}};
     }
 
-    PropertySystem::StorageProperty<int> max{"max"};
+    StorageProperty<int> max{"max"};
 
     Level2ClassProperties nested1;
     Level2ClassProperties nested2;
